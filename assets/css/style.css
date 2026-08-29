@@ -230,7 +230,7 @@ body{
 .about-me-text{
   flex:1;
   min-width:0;
-  max-width:640px;
+  max-width:680px;
 }
 .headshot{
   width:200px;
