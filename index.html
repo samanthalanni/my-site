@@ -7,44 +7,76 @@
 		<link rel="stylesheet" href="assets/css/style.css">
 	</head>
 	<body>
-		<main class="site">
-			<header class="hero">
+		<div class="orb-wrapper" aria-hidden="true">
+			<div class="orb orb-a"></div>
+			<div class="orb orb-b"></div>
+            <div class="orb orb-c"></div>
+		</div>
 
-				<div class="container hero-inner">
-					<img class="headshot" src="assets/images/headshot.jpeg" alt="Samantha headshot">
-					<div class="hero-text">
-						<h1 class="name">Samantha Lanni</h1>
-						<p class="role">product designer + problem solver + thoughtful human</p>
-						<div class="actions">
-							<a class="btn btn-ghost" href="contact.html">Contact</a>
-						</div>
-					</div>
+		<nav class="site-nav">
+			<div class="container nav-inner">
+				<a class="nav-logo" href="#">Samantha Lanni</a>
+				<div class="nav-links">
+					<a href="#about-me">ABOUT</a>
+					<a href="#contact">CONTACT</a>
 				</div>
+			</div>
+		</nav>
+
+		<main class="site">
+
+			<!-- Hero -->
+			<header class="hero section-animate">
+				<section class="container hero-section">
+					<p class="hero-copy">Designing digital experiences that are <em>meaningful</em> at every touchpoint</p>
+                    <button class="scroll-btn" id="scroll-btn" aria-label="Scroll down">
+					<span class="scroll-label">SCROLL</span>
+					<span class="scroll-arrow" aria-hidden="true">↓</span>
+				</button>
+				</section>
 			</header>
 
-			<section class="container section about-section">
-				<p class="about-copy">Designing digital experiences that are <em>meaningful</em> at every touchpoint</p>
-			</section>
-
-		<section id="weather" class="container section weather-section" aria-live="polite">
-			<div class="weather-card">
-				<div class="weather-location muted"></div>
-				<div class="weather-main">Loading weather…</div>
-				<div class="weather-sub muted"></div>
-			</div>
-		</section>
-			</section>
-
-			<footer class="site-footer">
-				<div class="container footer-inner">
-					<p>© 2026 Samantha Lanni</p>
-					<nav class="social">
-						<a href="#">Dribbble</a>
-						<a href="#">Behance</a>
-						<a href="#">LinkedIn</a>
-					</nav>
+			<!-- About Me -->
+			<section id="about-me" class="full-section section-animate">
+				<div class="container full-section-inner about-me-content">
+					<img class="headshot" src="assets/images/headshot.jpeg" alt="Samantha headshot">
+					<div class="about-me-text">
+						<h2>About me</h2>
+						<p>Samantha is an accomplished product designer who has led end-to-end design projects for 8+ years. She is known for delivering thoughtful, data-informed solutions that elevate customer experiences and drive measurable impact. 
+Samantha brings a grounded, empathetic approach and is committed to building experiences that are accessible, intuitive, and delightful. 
+</p>
+					</div>
 				</div>
-			</footer>
+			</section>
+
+			<!-- Contact -->
+			<section id="contact" class="full-section section-animate">
+				<div class="container full-section-inner">
+					<h2>Get in touch</h2>
+					<p>Let's make something cool together.</p>
+					<a href="mailto:hello@samantha.com" class="btn-message">Message Me</a>
+				</div>
+
+            <!-- Weather -->
+				<section id="weather" class="container section weather-section" aria-live="polite">
+					<div class="weather-card">
+						<div class="weather-location muted"></div>
+						<div class="weather-main">Loading weather…</div>
+						<div class="weather-sub muted"></div>
+					</div>
+				</section>
+
+				<footer class="site-footer">
+					<div class="container footer-inner">
+						<p>© 2026 Samantha Lanni</p>
+						<nav class="social">
+							<a href="#">DRIBBLE</a>
+							<a href="#">BEHANCE</a>
+							<a href="#">LINKEDIN</a>
+						</nav>
+					</div>
+				</footer>
+			</section>
 		</main>
 
 		<script src="assets/js/app.js" defer></script>

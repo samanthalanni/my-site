@@ -70,7 +70,7 @@
       
       const locationName = await fetchLocationName(lat, lon);
       if(locationName){
-        location.textContent = `📍 ${locationName}`;
+        location.textContent = `${locationName} 📍`;
       }
 
       // Weekly forecast removed — showing today's weather only
@@ -83,70 +83,204 @@
   });
 })();
 
-// Text ripple effect on hover
+// Text ripple effect on cursor move
 (function(){
-  const aboutCopy = document.querySelector('.about-copy');
-  if(!aboutCopy) return;
-  
-  // Recursively wrap text nodes in spans while preserving HTML elements
-  function wrapChars(node) {
+  const targets = document.querySelectorAll('.hero-copy, #about-me h2, #about-me p, #contact h2, #contact p');
+  if(!targets.length) return;
+
+  function wrapChars(node, preserveWords) {
     if(node.nodeType === Node.TEXT_NODE) {
-      const span = document.createElement('span');
-      node.textContent.split('').forEach(char => {
-        const charSpan = document.createElement('span');
-        charSpan.className = 'ripple-char';
-        if(char === ' ') {
-          charSpan.classList.add('ripple-space');
-          charSpan.textContent = '\u00A0';
-        } else {
-          charSpan.textContent = char;
-        }
-        span.appendChild(charSpan);
-      });
-      return span;
-    } else if(node.nodeType === Node.ELEMENT_NODE) {
+      const fragment = document.createDocumentFragment();
+      const text = node.textContent || '';
+      if(preserveWords) {
+        text.split(/(\s+)/).forEach(token => {
+          if(token === '') return;
+          if(/\s+/.test(token)) {
+            const spaceSpan = document.createElement('span');
+            spaceSpan.className = 'ripple-space';
+            spaceSpan.textContent = token;
+            fragment.appendChild(spaceSpan);
+            return;
+          }
+          const wordSpan = document.createElement('span');
+          wordSpan.className = 'ripple-word';
+          token.split('').forEach(char => {
+            const charSpan = document.createElement('span');
+            charSpan.className = 'ripple-char';
+            charSpan.textContent = char;
+            wordSpan.appendChild(charSpan);
+          });
+          fragment.appendChild(wordSpan);
+        });
+      } else {
+        text.split('').forEach(char => {
+          const charSpan = document.createElement('span');
+          charSpan.className = 'ripple-char';
+          if(char === ' ') {
+            charSpan.classList.add('ripple-space');
+            charSpan.textContent = '\u00A0';
+          } else {
+            charSpan.textContent = char;
+          }
+          fragment.appendChild(charSpan);
+        });
+      }
+      return fragment;
+    }
+    if(node.nodeType === Node.ELEMENT_NODE) {
       const clone = node.cloneNode(false);
       node.childNodes.forEach(child => {
-        clone.appendChild(wrapChars(child));
+        clone.appendChild(wrapChars(child, preserveWords));
       });
       return clone;
     }
     return node.cloneNode(true);
   }
+
+  function attachRippleEffect(el) {
+    const preserveWords = el.matches('#about-me p');
+    const wrapped = wrapChars(el, preserveWords);
+    el.innerHTML = '';
+    el.appendChild(wrapped);
+
+    const chars = el.querySelectorAll('.ripple-char');
+    el.addEventListener('mousemove', (e) => {
+      const rect = el.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      chars.forEach(char => {
+        if(char.classList.contains('ripple-space')) return;
+        const charRect = char.getBoundingClientRect();
+        const charCenterX = charRect.left - rect.left + charRect.width / 2;
+        const charCenterY = charRect.top - rect.top + charRect.height / 2;
+
+        const distance = Math.sqrt(
+          Math.pow(mouseX - charCenterX, 2) +
+          Math.pow(mouseY - charCenterY, 2)
+        );
+
+        const maxDistance = 100;
+        const scale = Math.max(1, 1.4 - (distance / maxDistance) * 0.4);
+        char.style.transform = `scale(${scale})`;
+      });
+    });
+
+    el.addEventListener('mouseleave', () => {
+      chars.forEach(char => {
+        if(char.classList.contains('ripple-space')) return;
+        char.style.transform = 'scale(1)';
+      });
+    });
+  }
+
+  targets.forEach(attachRippleEffect);
+})();
+
+// Scroll button → navigate to next section or return home
+(function(){
+  const btn = document.getElementById('scroll-btn');
+  const scrollArrow = btn ? btn.querySelector('.scroll-arrow') : null;
+  const scrollLabel = btn ? btn.querySelector('.scroll-label') : null;
   
-  // Wrap all text
-  const wrapped = wrapChars(aboutCopy);
-  aboutCopy.innerHTML = wrapped.innerHTML;
+  if(!btn || !scrollArrow || !scrollLabel) return;
   
-  const chars = aboutCopy.querySelectorAll('.ripple-char');
-  
-  aboutCopy.addEventListener('mousemove', (e) => {
-    const rect = aboutCopy.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+  function updateButtonMode(){
+    const heroSection = document.querySelector('.hero');
+    const aboutSection = document.getElementById('about-me');
+    const contactSection = document.getElementById('contact');
     
-    chars.forEach(char => {
-      if(char.classList.contains('ripple-space')) return;
-      const charRect = char.getBoundingClientRect();
-      const charCenterX = charRect.left - rect.left + charRect.width / 2;
-      const charCenterY = charRect.top - rect.top + charRect.height / 2;
-      
-      const distance = Math.sqrt(
-        Math.pow(mouseX - charCenterX, 2) + 
-        Math.pow(mouseY - charCenterY, 2)
-      );
-      
-      const maxDistance = 100;
-      const scale = Math.max(1, 1.4 - (distance / maxDistance) * 0.4);
-      
-      char.style.transform = `scale(${scale})`;
-    });
+    if(!heroSection || !aboutSection || !contactSection) return;
+    
+    const aboutRect = aboutSection.getBoundingClientRect();
+    const contactRect = contactSection.getBoundingClientRect();
+    const aboutInView = aboutRect.top < window.innerHeight * 0.6 && aboutRect.bottom > window.innerHeight * 0.4;
+    const contactInView = contactRect.top < window.innerHeight * 0.75;
+    
+    if(contactInView){
+      // Contact section is in view - show HOME button
+      btn.classList.remove('scroll-mode');
+      btn.classList.remove('about-mode');
+      btn.classList.add('home-mode');
+      btn.classList.add('at-contact');
+      scrollLabel.textContent = 'HOME';
+      scrollArrow.textContent = '↑';
+      btn.setAttribute('aria-label', 'Return home');
+    } else if(aboutInView) {
+      // About section in view - show arrow only
+      btn.classList.remove('home-mode');
+      btn.classList.add('scroll-mode');
+      btn.classList.add('about-mode');
+      btn.classList.remove('at-contact');
+      scrollLabel.textContent = 'SCROLL';
+      scrollArrow.textContent = '↓';
+      btn.setAttribute('aria-label', 'Scroll to contact');
+    } else {
+      // Not in contact - show SCROLL button
+      btn.classList.remove('home-mode');
+      btn.classList.remove('about-mode');
+      btn.classList.remove('at-contact');
+      btn.classList.add('scroll-mode');
+      scrollLabel.textContent = 'SCROLL';
+      scrollArrow.textContent = '↓';
+      btn.setAttribute('aria-label', 'Scroll down');
+    }
+  }
+  
+  btn.addEventListener('click', () => {
+    const heroSection = document.querySelector('.hero');
+    const aboutSection = document.getElementById('about-me');
+    const contactSection = document.getElementById('contact');
+    
+    if(!heroSection || !aboutSection || !contactSection) return;
+    
+    if(btn.classList.contains('home-mode')){
+      // Return to home
+      heroSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // Navigate to next section
+      const heroBottom = heroSection.getBoundingClientRect().bottom;
+      if(heroBottom > window.innerHeight / 2){
+        aboutSection.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   });
   
-  aboutCopy.addEventListener('mouseleave', () => {
-    chars.forEach(char => {
-      if(char.classList.contains('ripple-space')) return;
-      char.style.transform = 'scale(1)';
+  // Update button mode on scroll
+  window.addEventListener('scroll', updateButtonMode);
+  updateButtonMode(); // Check on load
+})();
+
+// Scroll slide-up / slide-down transitions via IntersectionObserver
+(function(){
+  const targets = document.querySelectorAll('.section-animate');
+  if(!targets.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const el = entry.target;
+      // Skip the hero — always visible
+      if(el.classList.contains('hero')) return;
+
+      if(entry.isIntersecting){
+        el.classList.remove('slide-down');
+        el.classList.add('is-visible');
+      } else {
+        // Determine which side the element exited from
+        const above = entry.boundingClientRect.top < 0;
+        if(above){
+          // Section scrolled above viewport → slide-down when it comes back
+          el.classList.remove('is-visible');
+          el.classList.add('slide-down');
+        } else {
+          // Section is below viewport → reset to slide-up state
+          el.classList.remove('is-visible', 'slide-down');
+        }
+      }
     });
-  });
+  }, { threshold: 0.12 });
+
+  targets.forEach(el => observer.observe(el));
 })();
